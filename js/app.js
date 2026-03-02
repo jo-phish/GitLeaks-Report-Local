@@ -118,8 +118,14 @@
 
   function render(list) {
     tbody.innerHTML = '';
+
+    // Number of columns in the header (RuleId, Description, Secret, Line, Date, Message, Link)
+    const headerColCount = 7;
+
     for (const it of list) {
       const row = extractRow(it);
+
+      // Main row (all fields except Link)
       const tr = document.createElement('tr');
 
       // RuleId
@@ -132,7 +138,7 @@
       tdDesc.textContent = row.Description || '';
       tr.appendChild(tdDesc);
 
-      // Secret (mask long secrets visually but allow copy)
+      // Secret
       const tdSecret = document.createElement('td');
       if (row.Secret) {
         const pre = document.createElement('pre');
@@ -164,21 +170,34 @@
       tdMsg.textContent = row.Message || '';
       tr.appendChild(tdMsg);
 
-      // Link (render anchor if present)
-      const tdLink = document.createElement('td');
+      // Keep Link column cell empty on main row (visual alignment with header)
+      const tdLinkEmpty = document.createElement('td');
+      tdLinkEmpty.textContent = '';
+      tr.appendChild(tdLinkEmpty);
+
+      tbody.appendChild(tr);
+
+      // Subrow for Link (placed immediately below main row, spanning all header columns)
+      const trSub = document.createElement('tr');
+      const tdSub = document.createElement('td');
+      tdSub.colSpan = headerColCount;
+
       if (row.Link) {
+        const label = document.createElement('strong');
+        label.textContent = 'Link: ';
         const a = document.createElement('a');
         a.href = row.Link;
         a.target = '_blank';
         a.rel = 'noopener noreferrer';
         a.textContent = row.Link;
-        tdLink.appendChild(a);
+        tdSub.appendChild(label);
+        tdSub.appendChild(a);
       } else {
-        tdLink.textContent = '';
+        tdSub.textContent = '';
       }
-      tr.appendChild(tdLink);
 
-      tbody.appendChild(tr);
+      trSub.appendChild(tdSub);
+      tbody.appendChild(trSub);
     }
 
     tableSection.classList.remove('hidden');
