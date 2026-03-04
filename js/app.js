@@ -105,6 +105,7 @@
     const Date = get('Date', 'date', 'CommitDate', 'timestamp');
     const Message = get('Message', 'message');
     const Link = get('Link', 'link', 'URL', 'url');
+    const File = get('File', 'file', 'Filename', 'filename');
 
     // Meta fields: Author, Email, StartLine, EndLine
     const Author = get('Author', 'author');
@@ -112,7 +113,7 @@
     const StartLine = get('StartLine', 'startLine', 'start_line') || (item.StartLine ? String(item.StartLine) : '');
     const EndLine = get('EndLine', 'endLine', 'end_line') || (item.EndLine ? String(item.EndLine) : '');
 
-    return { RuleId, Description, Secret, Line, Date, Message, Link, Author, Email, StartLine, EndLine };
+    return { RuleId, Description, Secret, Line, Date, Message, Link, File, Author, Email, StartLine, EndLine };
   }
 
   function escapeHtml(s) {
@@ -200,10 +201,29 @@
 
       tbody.appendChild(tr);
 
-      // Subrow for Link (placed immediately below main row, spanning all header columns)
-      const trSub = document.createElement('tr');
-      const tdSub = document.createElement('td');
-      tdSub.colSpan = headerColCount;
+      // Subrow for File (placed immediately below main row, above Link subrow)
+      const trFileSub = document.createElement('tr');
+      const tdFileSub = document.createElement('td');
+      tdFileSub.colSpan = headerColCount;
+
+      if (row.File) {
+        const label = document.createElement('strong');
+        label.textContent = 'File: ';
+        const code = document.createElement('code');
+        code.textContent = row.File;
+        tdFileSub.appendChild(label);
+        tdFileSub.appendChild(code);
+      } else {
+        tdFileSub.textContent = '';
+      }
+
+      trFileSub.appendChild(tdFileSub);
+      tbody.appendChild(trFileSub);
+
+      // Subrow for Link (placed immediately below File subrow, spanning all header columns)
+      const trLinkSub = document.createElement('tr');
+      const tdLinkSub = document.createElement('td');
+      tdLinkSub.colSpan = headerColCount;
 
       if (row.Link) {
         const label = document.createElement('strong');
@@ -213,14 +233,14 @@
         a.target = '_blank';
         a.rel = 'noopener noreferrer';
         a.textContent = row.Link;
-        tdSub.appendChild(label);
-        tdSub.appendChild(a);
+        tdLinkSub.appendChild(label);
+        tdLinkSub.appendChild(a);
       } else {
-        tdSub.textContent = '';
+        tdLinkSub.textContent = '';
       }
 
-      trSub.appendChild(tdSub);
-      tbody.appendChild(trSub);
+      trLinkSub.appendChild(tdLinkSub);
+      tbody.appendChild(trLinkSub);
     }
 
     tableSection.classList.remove('hidden');
