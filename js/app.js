@@ -10,6 +10,10 @@
   const summary = document.getElementById('summary');
   const errorsEl = document.getElementById('errors');
 
+  // max visible lines for Secret and Line fields before truncation
+  const MAX_VISIBLE_LINES = 10;
+  const LINE_HEIGHT_EM = 1.2; // used to compute collapsed max-height
+
   let items = [];
 
   input.addEventListener('change', handleFiles);
@@ -138,6 +142,54 @@
       .replace(/>/g, '&gt;');
   }
 
+  // create a <pre> element that is truncated to MAX_VISIBLE_LINES with an optional toggle
+  function createTruncatedPre(text) {
+    const txt = text == null ? '' : String(text);
+    const pre = document.createElement('pre');
+    pre.style.whiteSpace = 'pre-wrap';
+    pre.style.wordBreak = 'break-word';
+    pre.style.margin = '0';
+    pre.textContent = txt;
+
+    const lines = txt.match(new RegExp('.{1,20}','g')) ?? [];
+    const needsTruncate = lines.length > MAX_VISIBLE_LINES;
+
+    if (needsTruncate) {
+      pre.style.maxHeight = `${MAX_VISIBLE_LINES * LINE_HEIGHT_EM}em`;
+      pre.style.overflow = 'hidden';
+
+      const toggle = document.createElement('a');
+      toggle.href = '#';
+      toggle.textContent = 'Show more';
+      toggle.style.marginLeft = '8px';
+      toggle.style.fontSize = '90%';
+      toggle.dataset.expanded = '0';
+
+      toggle.addEventListener('click', (e) => {
+        e.preventDefault();
+        const expanded = toggle.dataset.expanded === '1';
+        if (!expanded) {
+          pre.style.maxHeight = '';
+          pre.style.overflow = '';
+          toggle.textContent = 'Show less';
+          toggle.dataset.expanded = '1';
+        } else {
+          pre.style.maxHeight = `${MAX_VISIBLE_LINES * LINE_HEIGHT_EM}em`;
+          pre.style.overflow = 'hidden';
+          toggle.textContent = 'Show more';
+          toggle.dataset.expanded = '0';
+        }
+      });
+
+      const container = document.createElement('div');
+      container.appendChild(pre);
+      container.appendChild(toggle);
+      return container;
+    }
+
+    return pre;
+  }
+
   function render(list) {
     tbody.innerHTML = '';
 
@@ -163,9 +215,8 @@
       // Secret
       const tdSecret = document.createElement('td');
       if (row.Secret) {
-        const pre = document.createElement('pre');
-        pre.textContent = row.Secret;
-        tdSecret.appendChild(pre);
+        const preContainer = createTruncatedPre(row.Secret);
+        tdSecret.appendChild(preContainer);
       } else {
         tdSecret.textContent = '';
       }
@@ -174,9 +225,8 @@
       // Line
       const tdLine = document.createElement('td');
       if (row.Line) {
-        const pre = document.createElement('pre');
-        pre.textContent = row.Line;
-        tdLine.appendChild(pre);
+        const preContainer = createTruncatedPre(row.Line);
+        tdLine.appendChild(preContainer);
       } else {
         tdLine.textContent = '';
       }
