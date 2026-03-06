@@ -214,6 +214,7 @@
 
       // Secret
       const tdSecret = document.createElement('td');
+        tdSecret.style.minWidth = '15em';
       if (row.Secret) {
         const preContainer = createTruncatedPre(row.Secret);
         tdSecret.appendChild(preContainer);
